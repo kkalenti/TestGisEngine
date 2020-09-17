@@ -1,0 +1,15 @@
+C:\Other\lessons\c#\AnterealTest\AnterealTest\bin\Debug\AnterealTest.exe.config
+C:\Other\lessons\c#\AnterealTest\AnterealTest\bin\Debug\AnterealTest.exe
+C:\Other\lessons\c#\AnterealTest\AnterealTest\bin\Debug\AnterealTest.pdb
+C:\Other\lessons\c#\AnterealTest\AnterealTest\obj\Debug\AnterealTest.csprojAssemblyReference.cache
+C:\Other\lessons\c#\AnterealTest\AnterealTest\obj\Debug\MainWindow.g.cs
+C:\Other\lessons\c#\AnterealTest\AnterealTest\obj\Debug\App.g.cs
+C:\Other\lessons\c#\AnterealTest\AnterealTest\obj\Debug\AnterealTest_MarkupCompile.cache
+C:\Other\lessons\c#\AnterealTest\AnterealTest\obj\Debug\AnterealTest_MarkupCompile.lref
+C:\Other\lessons\c#\AnterealTest\AnterealTest\obj\Debug\MainWindow.baml
+C:\Other\lessons\c#\AnterealTest\AnterealTest\obj\Debug\AnterealTest.g.resources
+C:\Other\lessons\c#\AnterealTest\AnterealTest\obj\Debug\AnterealTest.Properties.Resources.resources
+C:\Other\lessons\c#\AnterealTest\AnterealTest\obj\Debug\AnterealTest.csproj.GenerateResource.cache
+C:\Other\lessons\c#\AnterealTest\AnterealTest\obj\Debug\AnterealTest.csproj.CoreCompileInputs.cache
+C:\Other\lessons\c#\AnterealTest\AnterealTest\obj\Debug\AnterealTest.exe
+C:\Other\lessons\c#\AnterealTest\AnterealTest\obj\Debug\AnterealTest.pdb

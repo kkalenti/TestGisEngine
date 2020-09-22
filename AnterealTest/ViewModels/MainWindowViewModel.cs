@@ -3,8 +3,8 @@ using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.IO;
 using System.Windows;
-using System.Windows.Controls;
 using System.Windows.Input;
+using AnterealTest.Helper.Enums;
 using AnterealTest.Interfaces;
 using AnterealTest.Models;
 using AnterealTest.ViewModels.Base;
@@ -52,12 +52,24 @@ namespace AnterealTest.ViewModels
             set { _geometries = value; RaisePropertyChanged("Geometries"); }
         }
 
+        /// <summary>
+        /// Состояние загрузки файла
+        /// </summary>
         private LoadingState _state = LoadingState.Success;
+
+        /// <summary>
+        /// Сообщение об ошибке
+        /// </summary>
+        private string _message = "";
 
         #endregion
 
         #region Commands
-
+        
+        /// <summary>
+        /// Открытие диалогового окна для выбора файла
+        /// </summary>
+        /// <param name="parameter"></param>
         private void GetFilePath(object parameter = null)
         {
             var openFileDialog = new OpenFileDialog
@@ -69,38 +81,31 @@ namespace AnterealTest.ViewModels
             {
                 FilePath = openFileDialog.FileName;
             }
-            else
-            {
-                //TODO: Подумать над сообщением об ошибке
-                _state = LoadingState.Failed;
-            }
         }
 
-        private void UpdateMessage()
-        {
-            switch (_state)
-            {
-                case LoadingState.Success:
-                    MessageField = "Документ прочитан без ошибок";
-                    break;
-                case LoadingState.Partial:
-                    MessageField = "Данные были прочитаны частично";
-                    break;
-                case LoadingState.Failed:
-                    MessageField = "Произошла ошибка";
-                    break;
-                default:
-                    throw new ArgumentOutOfRangeException();
-            }
-        }
-
+        /// <summary>
+        /// Загрузка выбранного файла
+        /// </summary>
+        /// <param name="parameter"></param>
         private void Load(object parameter = null)
         {
             ReadFile();
             UpdateMessage();
         }
 
-        //TODO: сделать все проверки
+        private ICommand _getFilePathCommand;
+
+        public ICommand GetFilePathCommand => _getFilePathCommand;
+
+        private ICommand _loadingCommand;
+
+        public ICommand LoadingCommand => _loadingCommand;
+
+        #endregion
+
+        /// <summary>
+        /// Метод для чтения текстого файла
+        /// </summary>
         private void ReadFile()
         {
             try
@@ -108,8 +113,7 @@ namespace AnterealTest.ViewModels
                 using (var sr = new StreamReader(FilePath))
                 {
                     string line;
-                    var tempGeometries = new ObservableCollection<IGeometry>();
-
+                    Geometries = new ObservableCollection<IGeometry>();
                     while ((line = sr.ReadLine()) != null)
                     {
                         var numberLine = line.Split(' ');
@@ -135,84 +139,80 @@ namespace AnterealTest.ViewModels
                             pointList.Add(new Point(xNumber, yNumber));
                         }
 
-                        if(failFlag) continue;
+                        if (failFlag) continue;
 
-                        if (pointList.Count == 1)
-                        {
-                            tempGeometries.Add(new PointModel()
-                            {
-                                GeometryPoints = pointList
-                            });
-                        }
-                        else if (pointList.Count == 2)
-                        {
-                            tempGeometries.Add(new LineModel()
-                            {
-                                GeometryPoints = pointList
-                            });
-                        }
-                        else if (pointList.Count >= 3)
-                        {
-                            tempGeometries.Add(new PolygonModel()
-                            {
-                                GeometryPoints = pointList
-                            });
-                        }
-                        else
-                        {
-                            _state = LoadingState.Partial;
-                            break;
-                        }
+                        Geometries.Add(SpawnGeometry(pointList));
                     }
-
-                    Geometries = tempGeometries;
                 }
             }
-            catch (Exception e)
+            catch (FileNotFoundException)
             {
                 _state = LoadingState.Failed;
+                _message = "Запрашиваемый файл не найден";
+            }
+            catch (UnauthorizedAccessException)
+            {
+                _state = LoadingState.Failed;
+                _message = "У вас нет доступа к этому файлу";
+            }
+            catch (Exception)
+            {
+                _state = LoadingState.Failed;
+                _message = "Произошла неизвестная ошибка";
             }
         }
 
-        private ICommand _getFilePathCommand;
-
-        public ICommand GetFilePathCommand => _getFilePathCommand;
-
-        private ICommand _loadingCommand;
-
-        public ICommand LoadingCommand => _loadingCommand;
-
-        #endregion
-
-    }
-
-    public enum LoadingState
-    {
-        Success,
-        Partial,
-        Failed
-    }
-
-    public class GeometrySelector : DataTemplateSelector
-    {
-        public DataTemplate PointTemplate { get; set; }
-
-        public DataTemplate LineTemplate { get; set; }
-
-        public DataTemplate PolygonTemplate { get; set; }
-
-        public override DataTemplate SelectTemplate(object item, DependencyObject container)
+        /// <summary>
+        /// Метод создает геометрическую сущность в зависимости от количества точек
+        /// </summary>
+        /// <returns>Геометрический объект</returns>
+        private IGeometry SpawnGeometry(List<Point> pointList)
         {
-            switch (item)
+            if (pointList.Count == 1)
             {
-                case PointModel _:
-                    return PointTemplate;
-                case LineModel _:
-                    return LineTemplate;
-                case PolygonModel _:
-                    return PolygonTemplate;
-                default:
-                    return base.SelectTemplate(item, container);
+                return new PointModel()
+                {
+                    GeometryPoints = pointList
+                };
+            }
+            else if (pointList.Count == 2)
+            {
+                return new LineModel()
+                {
+                    GeometryPoints = pointList
+                };
+            }
+            else if (pointList.Count >= 3)
+            {
+                return new PolygonModel()
+                {
+                    GeometryPoints = pointList
+                };
+            }
+            else
+            {
+                _state = LoadingState.Partial;
+                return null;
+            }
+        }
+
+
+        /// <summary>
+        /// Метод для обновления сообщения об ошибке (или её отсутствие)
+        /// </summary>
+        private void UpdateMessage()
+        {
+            switch (_state)
+            {
+                case LoadingState.Success:
+                    MessageField = "Документ прочитан без ошибок";
+                    break;
+                case LoadingState.Partial:
+                    MessageField = "Данные были прочитаны частично";
+                    break;
+                case LoadingState.Failed:
+                    MessageField = $"Произошла ошибка: {_message}";
+                    break;
             }
         }
     }

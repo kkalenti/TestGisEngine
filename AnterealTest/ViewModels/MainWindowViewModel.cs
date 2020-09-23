@@ -174,6 +174,13 @@ namespace AnterealTest.ViewModels
         {
             try
             {
+                if (string.IsNullOrEmpty(FilePath))
+                {
+                    _state = LoadingState.Failed;
+                    _message = "Вы не выбрали файл";
+                    return;
+                }
+
                 using (var sr = new StreamReader(FilePath))
                 {
                     string line;
@@ -223,7 +230,7 @@ namespace AnterealTest.ViewModels
                 _state = LoadingState.Failed;
                 _message = "У вас нет доступа к этому файлу";
             }
-            catch (Exception)
+            catch (Exception e)
             {
                 _state = LoadingState.Failed;
                 _message = "Произошла неизвестная ошибка";

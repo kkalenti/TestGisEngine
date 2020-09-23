@@ -18,7 +18,7 @@ namespace AnterealTest
         /// <summary>
         /// Коэффициент масштабирования
         /// </summary>
-        private double _scaleRate = 0.05;
+        private double _scaleRate = 1.05;
 
         /// <summary>
         /// Точка для контроля координат нажатия на канвас
@@ -77,13 +77,13 @@ namespace AnterealTest
             {
                 ((MainWindowViewModel)DataContext).CenterValue = new Point(e.GetPosition(canvas).X - geomTransformValue.X,
                     e.GetPosition(canvas).Y - geomTransformValue.Y);
-                ((MainWindowViewModel)DataContext).ScaleValue += _scaleRate;
+                ((MainWindowViewModel)DataContext).ScaleValue *= _scaleRate;
             }
             else if(e.Delta < 0)
             {
                 ((MainWindowViewModel)DataContext).CenterValue = new Point(e.GetPosition(canvas).X - geomTransformValue.X,
                     e.GetPosition(canvas).Y - geomTransformValue.Y);
-                ((MainWindowViewModel)DataContext).ScaleValue -= _scaleRate;
+                ((MainWindowViewModel)DataContext).ScaleValue /= _scaleRate;
             }
         }
 

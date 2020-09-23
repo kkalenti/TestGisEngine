@@ -7,14 +7,33 @@ using AnterealTest.Interfaces;
 
 namespace AnterealTest.Models
 {
-    public class PointModel : IGeometry
+    /// <summary>
+    /// Модель, представляет собой точку
+    /// </summary>
+    public class PointModel : GeometryBaseModel
     {
-        public List<Point> GeometryPoints { get; set; }
+        /// <summary>
+        /// Конструктор класса, инициализирует список точек фигуры
+        /// </summary>
+        /// <param name="pointList"></param>
+        public PointModel(List<Point> pointList) : base(pointList)
+        {
 
+        }
+
+        /// <summary>
+        /// X координата точки
+        /// </summary>
         public double XPosition => GeometryPoints.FirstOrDefault().X;
 
+        /// <summary>
+        /// Y координата точки
+        /// </summary>
         public double YPosition => GeometryPoints.FirstOrDefault().Y;
 
-        public string StringOfPoints => $"{XPosition},{YPosition}";
+        /// <summary>
+        /// Формирование строки точек для передачи во View формы
+        /// </summary>
+        public string StringOfPointsToView => $"{XPosition},{YPosition}";
     }
 }

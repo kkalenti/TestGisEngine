@@ -6,10 +6,23 @@ using AnterealTest.Interfaces;
 
 namespace AnterealTest.Models
 {
-    public class LineModel : IGeometry
+    /// <summary>
+    /// Модель представляет собой линию
+    /// </summary>
+    public class LineModel : GeometryBaseModel
     {
-        public List<Point> GeometryPoints { get; set; }
+        /// <summary>
+        /// Конструктор класса, инициализирует список точек фигуры
+        /// </summary>
+        /// <param name="pointList"></param>
+        public LineModel(List<Point> pointList) : base(pointList)
+        {
 
+        }
+
+        /// <summary>
+        /// Первая точка линии
+        /// </summary>
         public Point FirstPoint
         {
             get
@@ -20,6 +33,9 @@ namespace AnterealTest.Models
             }
         }
 
+        /// <summary>
+        /// Вторая точка линии
+        /// </summary>
         public Point SecondPoint
         {
             get

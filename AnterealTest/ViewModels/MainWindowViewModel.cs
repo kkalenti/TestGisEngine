@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.IO;
+using System.Linq;
 using System.Windows;
 using System.Windows.Input;
 using AnterealTest.Helper.Enums;
@@ -42,14 +43,44 @@ namespace AnterealTest.ViewModels
             set { _messageField = value; RaisePropertyChanged("MessageField"); }
         }
 
-        private ObservableCollection<IGeometry> _geometries;
+        private ObservableCollection<GeometryBaseModel> _geometries;
         /// <summary>
         /// Список для хранения геометрий
         /// </summary>
-        public ObservableCollection<IGeometry> Geometries
+        public ObservableCollection<GeometryBaseModel> Geometries
         {
             get { return _geometries; }
             set { _geometries = value; RaisePropertyChanged("Geometries"); }
+        }
+
+        private double _scaleValue = 1;
+        /// <summary>
+        /// Свойство хранит информацию о масштабе карты
+        /// </summary>
+        public double ScaleValue
+        {
+            get { return _scaleValue;}
+            set { _scaleValue = value; RaisePropertyChanged("ScaleValue"); }
+        }
+
+        private Point _transformValue = new Point(0,0);
+        /// <summary>
+        /// Свойство хранит информацию о положении области видимости
+        /// </summary>
+        public Point TransformValue
+        {
+            get { return _transformValue; }
+            set { _transformValue = value; RaisePropertyChanged("TransformValue"); }
+        }
+
+        private Point _centerValue = new Point(0, 0);
+        /// <summary>
+        /// Переменная хранит информацию о центре масштабирования карты
+        /// </summary>
+        public Point CenterValue
+        {
+            get { return _centerValue; }
+            set { _centerValue = value; RaisePropertyChanged("CenterValue"); }
         }
 
         /// <summary>
@@ -94,14 +125,47 @@ namespace AnterealTest.ViewModels
         }
 
         private ICommand _getFilePathCommand;
-
+        /// <summary>
+        /// Комманда для выбора файла и сохранения его пути
+        /// </summary>
         public ICommand GetFilePathCommand => _getFilePathCommand;
 
         private ICommand _loadingCommand;
-
+        /// <summary>
+        /// Комманда для загрузки информации из файла
+        /// </summary>
         public ICommand LoadingCommand => _loadingCommand;
 
         #endregion
+
+        /// <summary>
+        /// Удаление геометрий
+        /// </summary>
+        /// <param name="geometriesToDelete">Геометрии на удаление</param>
+        public void DeleteGeometries(List<GeometryBaseModel> geometriesToDelete)
+        {
+            geometriesToDelete.ForEach(x => Geometries.Remove(x));
+        }
+
+        /// <summary>
+        /// Сохранение файла
+        /// </summary>
+        public void SaveChanges()
+        {
+            if (Geometries == null || Geometries.Count == 0) return;
+
+            var saveFileDialog = new SaveFileDialog()
+            {
+                Filter = "Text files (*.txt)|*.txt"
+            };
+
+            var stringsToSave = Geometries.Select(geom => geom.GetStringToSave());
+
+            if (saveFileDialog.ShowDialog() == true)
+            {
+                File.WriteAllLines(saveFileDialog.FileName, stringsToSave);
+            }
+        }
 
         /// <summary>
         /// Метод для чтения текстого файла
@@ -113,7 +177,7 @@ namespace AnterealTest.ViewModels
                 using (var sr = new StreamReader(FilePath))
                 {
                     string line;
-                    Geometries = new ObservableCollection<IGeometry>();
+                    Geometries = new ObservableCollection<GeometryBaseModel>();
                     while ((line = sr.ReadLine()) != null)
                     {
                         var numberLine = line.Split(' ');
@@ -144,6 +208,10 @@ namespace AnterealTest.ViewModels
                         Geometries.Add(SpawnGeometry(pointList));
                     }
                 }
+
+                ScaleValue = 1;
+                TransformValue = new Point(0,0);
+                CenterValue = new Point(0, 0);
             }
             catch (FileNotFoundException)
             {
@@ -166,28 +234,19 @@ namespace AnterealTest.ViewModels
         /// Метод создает геометрическую сущность в зависимости от количества точек
         /// </summary>
         /// <returns>Геометрический объект</returns>
-        private IGeometry SpawnGeometry(List<Point> pointList)
+        private GeometryBaseModel SpawnGeometry(List<Point> pointList)
         {
             if (pointList.Count == 1)
             {
-                return new PointModel()
-                {
-                    GeometryPoints = pointList
-                };
+                return new PointModel(pointList);
             }
             else if (pointList.Count == 2)
             {
-                return new LineModel()
-                {
-                    GeometryPoints = pointList
-                };
+                return new LineModel(pointList);
             }
             else if (pointList.Count >= 3)
             {
-                return new PolygonModel()
-                {
-                    GeometryPoints = pointList
-                };
+                return new PolygonModel(pointList);
             }
             else
             {
@@ -195,7 +254,6 @@ namespace AnterealTest.ViewModels
                 return null;
             }
         }
-
 
         /// <summary>
         /// Метод для обновления сообщения об ошибке (или её отсутствие)

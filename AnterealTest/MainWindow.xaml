@@ -6,7 +6,9 @@
         xmlns:viewModels="clr-namespace:AnterealTest.ViewModels"  
         xmlns:local="clr-namespace:AnterealTest"
         xmlns:selectors="clr-namespace:AnterealTest.ViewModels.Selectors"
-        mc:Ignorable="d" Title="Тестовая ГИС" Height="650" Width="1000" Name="TestGis">
+        xmlns:system="clr-namespace:System;assembly=mscorlib"
+        mc:Ignorable="d" Title="Тестовая ГИС" Height="650" Width="1000" Name="TestGis"
+        KeyDown="Window_OnKeyDown">
     <Grid Margin="10">
         <Grid.RowDefinitions>
             <RowDefinition Height="40"/>
@@ -29,7 +31,12 @@
                       ItemsSource="{Binding Geometries}" Margin="5" Background="#FFF1F0F0" >
             <ItemsControl.ItemsPanel>
                 <ItemsPanelTemplate>
-                    <Canvas Name="GeometryCanvas" Background="Transparent"/>
+                    <Canvas Name="GeometryCanvas" Background="Transparent" ClipToBounds="True" 
+                            MouseWheel="GeometryCanvas_OnMouseWheel"
+                            MouseLeftButtonDown="GeometryCanvas_OnMouseLeftButtonDown"
+                            MouseMove="GeometryCanvas_OnPreviewMouseMove"
+                            MouseLeftButtonUp="GeometryCanvas_OnMouseLeftButtonUp"
+                            LostFocus="GeometryCanvas_OnLostFocus"/>
                 </ItemsPanelTemplate>
             </ItemsControl.ItemsPanel>
             <ItemsControl.ItemTemplateSelector>
@@ -39,24 +46,61 @@
                             <Line DataContext="{Binding RelativeSource={RelativeSource Mode=FindAncestor, AncestorType=ContentPresenter}, Path=DataContext}"
                                   X1="{Binding FirstPoint.X}" X2="{Binding SecondPoint.X}"
                                   Y1="{Binding FirstPoint.Y}" Y2="{Binding SecondPoint.Y}"
-                                  Stroke="DarkGray" StrokeThickness="2" />
+                                  Stroke="DarkGray" StrokeThickness="2"
+                                  MouseLeftButtonDown="Shape_OnMouseLeftButtonDown"
+                                  MouseLeftButtonUp="Shape_OnMouseLeftButtonUp">
+                                <Line.RenderTransform>
+                                    <TransformGroup>
+                                        <ScaleTransform ScaleX="{Binding RelativeSource={RelativeSource Mode=FindAncestor, AncestorType=Window }, Path=DataContext.ScaleValue}"
+                                                        ScaleY="{Binding RelativeSource={RelativeSource Mode=FindAncestor, AncestorType=Window }, Path=DataContext.ScaleValue}"
+                                                        CenterX="{Binding RelativeSource={RelativeSource Mode=FindAncestor, AncestorType=Window }, Path=DataContext.CenterValue.X}"
+                                                        CenterY="{Binding RelativeSource={RelativeSource Mode=FindAncestor, AncestorType=Window }, Path=DataContext.CenterValue.Y}"/>
+                                        <TranslateTransform X="{Binding RelativeSource={RelativeSource Mode=FindAncestor, AncestorType=Window }, Path=DataContext.TransformValue.X}"
+                                                            Y="{Binding RelativeSource={RelativeSource Mode=FindAncestor, AncestorType=Window }, Path=DataContext.TransformValue.Y}"/>
+                                    </TransformGroup>
+                                </Line.RenderTransform>
+                            </Line>
                         </DataTemplate>
                     </selectors:GeometrySelector.LineTemplate>
                     <selectors:GeometrySelector.PointTemplate>
                         <DataTemplate>
                             <Path DataContext="{Binding RelativeSource={RelativeSource Mode=FindAncestor, AncestorType=ContentPresenter}, Path=DataContext}"
-                                  Fill="Aquamarine" Stroke="CadetBlue">
+                                  Fill="Aquamarine" Stroke="CadetBlue" MouseLeftButtonDown="Shape_OnMouseLeftButtonDown"
+                                  MouseLeftButtonUp="Shape_OnMouseLeftButtonUp">
                                 <Path.Data>
                                     <EllipseGeometry 
-                                        RadiusX="2" RadiusY="2" Center="{Binding StringOfPoints}" />
+                                        RadiusX="2" RadiusY="2" Center="{Binding StringOfPointsToView}" />
                                 </Path.Data>
+                                <Path.RenderTransform>
+                                        <TransformGroup>
+                                            <ScaleTransform ScaleX="{Binding RelativeSource={RelativeSource Mode=FindAncestor, AncestorType=Window }, Path=DataContext.ScaleValue}"
+                                                            ScaleY="{Binding RelativeSource={RelativeSource Mode=FindAncestor, AncestorType=Window }, Path=DataContext.ScaleValue}"
+                                                            CenterX="{Binding RelativeSource={RelativeSource Mode=FindAncestor, AncestorType=Window }, Path=DataContext.CenterValue.X}"
+                                                            CenterY="{Binding RelativeSource={RelativeSource Mode=FindAncestor, AncestorType=Window }, Path=DataContext.CenterValue.Y}"/>
+                                            <TranslateTransform X="{Binding RelativeSource={RelativeSource Mode=FindAncestor, AncestorType=Window }, Path=DataContext.TransformValue.X}"
+                                                                Y="{Binding RelativeSource={RelativeSource Mode=FindAncestor, AncestorType=Window }, Path=DataContext.TransformValue.Y}"/>
+                                        </TransformGroup>
+                                </Path.RenderTransform>
                             </Path>
                         </DataTemplate>
                     </selectors:GeometrySelector.PointTemplate>
                     <selectors:GeometrySelector.PolygonTemplate>
                         <DataTemplate>
                             <Polygon  DataContext="{Binding RelativeSource={RelativeSource Mode=FindAncestor, AncestorType=ContentPresenter}, Path=DataContext}"
-                                      Fill="Coral" Stroke="Chocolate"  StrokeThickness="2" Points="{Binding StringOfPoints}"/>
+                                      Fill="Coral" Stroke="Chocolate"  StrokeThickness="2" Points="{Binding StringOfPointsToView}"
+                                      MouseLeftButtonDown="Shape_OnMouseLeftButtonDown"
+                                      MouseLeftButtonUp="Shape_OnMouseLeftButtonUp">
+                                <Polygon.RenderTransform>
+                                    <TransformGroup>
+                                        <ScaleTransform ScaleX="{Binding RelativeSource={RelativeSource Mode=FindAncestor, AncestorType=Window }, Path=DataContext.ScaleValue}"
+                                                        ScaleY="{Binding RelativeSource={RelativeSource Mode=FindAncestor, AncestorType=Window }, Path=DataContext.ScaleValue}"
+                                                        CenterX="{Binding RelativeSource={RelativeSource Mode=FindAncestor, AncestorType=Window }, Path=DataContext.CenterValue.X}"
+                                                        CenterY="{Binding RelativeSource={RelativeSource Mode=FindAncestor, AncestorType=Window }, Path=DataContext.CenterValue.Y}"/>
+                                        <TranslateTransform X="{Binding RelativeSource={RelativeSource Mode=FindAncestor, AncestorType=Window }, Path=DataContext.TransformValue.X}"
+                                                            Y="{Binding RelativeSource={RelativeSource Mode=FindAncestor, AncestorType=Window }, Path=DataContext.TransformValue.Y}"/>
+                                    </TransformGroup>
+                                </Polygon.RenderTransform>
+                            </Polygon>
                         </DataTemplate>
                     </selectors:GeometrySelector.PolygonTemplate>
                 </selectors:GeometrySelector>

@@ -5,9 +5,9 @@ using System.IO;
 using System.Linq;
 using System.Windows;
 using System.Windows.Input;
+using AnterealTest.Helper.Classes;
 using AnterealTest.Helper.Enums;
 using AnterealTest.Interfaces;
-using AnterealTest.Models;
 using AnterealTest.ViewModels.Base;
 using Microsoft.Win32;
 
@@ -159,7 +159,8 @@ namespace AnterealTest.ViewModels
                 Filter = "Text files (*.txt)|*.txt"
             };
 
-            var stringsToSave = Geometries.Select(geom => geom.GetStringToSave());
+            var stringsToSave = Geometries.Select(geom
+                => geom.GetStringToSave());
 
             if (saveFileDialog.ShowDialog() == true)
             {
@@ -212,7 +213,14 @@ namespace AnterealTest.ViewModels
 
                         if (failFlag) continue;
 
-                        Geometries.Add(SpawnGeometry(pointList));
+                        try
+                        {
+                            Geometries.Add(GeometrySpawner.Spawn(pointList));
+                        }
+                        catch (InvalidDataException)
+                        {
+                            _state = LoadingState.Partial;
+                        }
                     }
                 }
 
@@ -234,31 +242,6 @@ namespace AnterealTest.ViewModels
             {
                 _state = LoadingState.Failed;
                 _message = "Произошла неизвестная ошибка";
-            }
-        }
-
-        /// <summary>
-        /// Метод создает геометрическую сущность в зависимости от количества точек
-        /// </summary>
-        /// <returns>Геометрический объект</returns>
-        private GeometryBaseModel SpawnGeometry(List<Point> pointList)
-        {
-            if (pointList.Count == 1)
-            {
-                return new PointModel(pointList);
-            }
-            else if (pointList.Count == 2)
-            {
-                return new LineModel(pointList);
-            }
-            else if (pointList.Count >= 3)
-            {
-                return new PolygonModel(pointList);
-            }
-            else
-            {
-                _state = LoadingState.Partial;
-                return null;
             }
         }
 

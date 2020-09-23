@@ -55,6 +55,7 @@
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </ApplicationDefinition>
+    <Compile Include="Helper\Classes\GeometrySpawner.cs" />
     <Compile Include="Helper\Enums\LoadingState.cs" />
     <Compile Include="Models\LineModel.cs" />
     <Compile Include="Models\PointModel.cs" />

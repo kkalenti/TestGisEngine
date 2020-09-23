@@ -3,10 +3,7 @@
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-        xmlns:viewModels="clr-namespace:AnterealTest.ViewModels"  
-        xmlns:local="clr-namespace:AnterealTest"
         xmlns:selectors="clr-namespace:AnterealTest.ViewModels.Selectors"
-        xmlns:system="clr-namespace:System;assembly=mscorlib"
         mc:Ignorable="d" Title="Тестовая ГИС" Height="650" Width="1000" Name="TestGis"
         KeyDown="Window_OnKeyDown">
     <Window.Resources>
@@ -46,7 +43,7 @@
                 <TextBox Text="{Binding FilePath, Mode=TwoWay}" VerticalContentAlignment="Center"/>
             </DockPanel>
             <Button Grid.Column="1" Margin="5" Height="25" Content="Обзор" Command="{Binding GetFilePathCommand}"/>
-            <Button Grid.Column="2" Margin="5"  Height="25" Content="Обработать файл"  Command="{Binding LoadingCommand}"/>
+            <Button Grid.Column="2" Margin="5"  Height="25" Content="Загрузить файл"  Command="{Binding LoadingCommand}"/>
         </Grid>
         <ItemsControl Grid.Row="1" BorderBrush="Black" BorderThickness="2"
                       ItemsSource="{Binding Geometries}" Margin="5" Background="#FFF1F0F0" >
@@ -64,17 +61,23 @@
                 <selectors:GeometrySelector>
                     <selectors:GeometrySelector.LineTemplate>
                         <DataTemplate>
-                            <Line DataContext="{Binding RelativeSource={RelativeSource Mode=FindAncestor, AncestorType=ContentPresenter}, Path=DataContext}"
+                            <Line DataContext="{Binding RelativeSource={RelativeSource Mode=FindAncestor, AncestorType=ContentPresenter}, 
+                                Path=DataContext}"
                                   X1="{Binding FirstPoint.X}" X2="{Binding SecondPoint.X}"
                                   Y1="{Binding FirstPoint.Y}" Y2="{Binding SecondPoint.Y}"
-                                  Stroke="DarkGray" StrokeThickness="2" Style="{StaticResource ShapeStyle}">
+                                  Stroke="DarkGray"
+                                  StrokeThickness="2"
+                                  Style="{StaticResource ShapeStyle}">
                             </Line>
                         </DataTemplate>
                     </selectors:GeometrySelector.LineTemplate>
                     <selectors:GeometrySelector.PointTemplate>
                         <DataTemplate>
-                            <Path DataContext="{Binding RelativeSource={RelativeSource Mode=FindAncestor, AncestorType=ContentPresenter}, Path=DataContext}"
-                                  Fill="Aquamarine" Stroke="CadetBlue" Style="{StaticResource ShapeStyle}">
+                            <Path DataContext="{Binding RelativeSource={RelativeSource Mode=FindAncestor, AncestorType=ContentPresenter},
+                                Path=DataContext}"
+                                  Fill="Aquamarine" 
+                                  Stroke="CadetBlue"
+                                  Style="{StaticResource ShapeStyle}">
                                 <Path.Data>
                                     <EllipseGeometry 
                                         RadiusX="2" RadiusY="2" Center="{Binding StringOfPointsToView}" />
@@ -84,8 +87,11 @@
                     </selectors:GeometrySelector.PointTemplate>
                     <selectors:GeometrySelector.PolygonTemplate>
                         <DataTemplate>
-                            <Polygon DataContext="{Binding RelativeSource={RelativeSource Mode=FindAncestor, AncestorType=ContentPresenter}, Path=DataContext}"
-                                     Fill="Coral" Stroke="Chocolate"  StrokeThickness="2" Points="{Binding StringOfPointsToView}"
+                            <Polygon DataContext="{Binding RelativeSource={RelativeSource Mode=FindAncestor, AncestorType=ContentPresenter},
+                                Path=DataContext}"
+                                     Fill="Coral" Stroke="Chocolate" 
+                                     StrokeThickness="2"
+                                     Points="{Binding StringOfPointsToView}"
                                      Style="{StaticResource ShapeStyle}"/>
                         </DataTemplate>
                     </selectors:GeometrySelector.PolygonTemplate>

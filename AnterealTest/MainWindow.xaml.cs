@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Windows;
 using System.Windows.Controls;
@@ -15,6 +16,11 @@ namespace AnterealTest
     /// </summary>
     public partial class MainWindow : Window
     {
+        /// <summary>
+        /// VM для главного окна
+        /// </summary>
+        private MainWindowViewModel _mainWindowViewModel;
+
         /// <summary>
         /// Коэффициент масштабирования
         /// </summary>
@@ -40,29 +46,27 @@ namespace AnterealTest
         /// Возвращает true, если при последнем клике мышкой была выделена фигура
         /// </summary>
         private bool _selectFlag;
-
+        
         /// <summary>
-        /// Словарь для хранения цветов для отображения
+        /// Словарь для хранения соответствий фигур и цветов
         /// </summary>
-        private Dictionary<string, Color> _controlColorsDictionary = new Dictionary<string, Color>()
-        {
-            {"LineStroke", Colors.DarkGray},
-            {"EllipseStroke", Colors.CadetBlue},
-            {"EllipseFill", Colors.Aquamarine},
-            {"PolygonStroke", Colors.Chocolate},
-            {"PolygonFill", Colors.Coral},
-            {"SelectedStroke", Colors.Gold},
-            {"SelectedFill", Colors.Yellow},
-        };
+        private Dictionary<Type, (Color Stroke, Color Fill)> shapeColorDictionary
+            = new Dictionary<Type, (Color, Color)>()
+            {
+                {typeof(Line), (Colors.DarkGray, Colors.DarkGray)},
+                {typeof(Polygon), (Colors.Chocolate, Colors.Coral)},
+                {typeof(Path), (Colors.CadetBlue, Colors.Aquamarine)},
+            };
 
         /// <summary>
         /// Лист для хранения выделенных фигур
         /// </summary>
-        private List<Shape> _selectedShapeList = new List<Shape>();
+        private readonly List<Shape> _selectedShapeList = new List<Shape>();
 
         public MainWindow()
         {
-            DataContext = new MainWindowViewModel();
+            _mainWindowViewModel = new MainWindowViewModel();
+            DataContext = _mainWindowViewModel;
             InitializeComponent();
         }
 
@@ -71,19 +75,19 @@ namespace AnterealTest
             var canvas = (sender as Canvas);
             if (canvas == null) return;
 
-            var geomTransformValue = ((MainWindowViewModel)DataContext).TransformValue;
+            var geomTransformValue = _mainWindowViewModel.TransformValue;
 
             if (e.Delta > 0)
             {
-                ((MainWindowViewModel)DataContext).CenterValue = new Point(e.GetPosition(canvas).X - geomTransformValue.X,
+                _mainWindowViewModel.CenterValue = new Point(e.GetPosition(canvas).X - geomTransformValue.X,
                     e.GetPosition(canvas).Y - geomTransformValue.Y);
-                ((MainWindowViewModel)DataContext).ScaleValue *= _scaleRate;
+                _mainWindowViewModel.ScaleValue *= _scaleRate;
             }
             else if(e.Delta < 0)
             {
-                ((MainWindowViewModel)DataContext).CenterValue = new Point(e.GetPosition(canvas).X - geomTransformValue.X,
+                _mainWindowViewModel.CenterValue = new Point(e.GetPosition(canvas).X - geomTransformValue.X,
                     e.GetPosition(canvas).Y - geomTransformValue.Y);
-                ((MainWindowViewModel)DataContext).ScaleValue /= _scaleRate;
+                _mainWindowViewModel.ScaleValue /= _scaleRate;
             }
         }
 
@@ -91,16 +95,16 @@ namespace AnterealTest
         {
             if (_lastDragPoint.HasValue)
             {
-                _preSelectedItem = null; //Если происходит движение мыши при нажатии на объект, то выделение объекта отменяется
+                _preSelectedItem = null;
                 _selectFlag = false;
 
                 var canvas = (sender as Canvas);
                 if (canvas == null) return;
 
                 var newPos = e.GetPosition(canvas) - _lastDragPoint;
-                var geomTransformValue = ((MainWindowViewModel)DataContext).TransformValue;
+                var geomTransformValue = _mainWindowViewModel.TransformValue;
 
-                ((MainWindowViewModel)DataContext).TransformValue = new Point(_lastGeomPoint.Value.X + newPos.Value.X,
+                _mainWindowViewModel.TransformValue = new Point(_lastGeomPoint.Value.X + newPos.Value.X,
                     _lastGeomPoint.Value.Y + newPos.Value.Y);
             }
         }
@@ -116,14 +120,18 @@ namespace AnterealTest
 
         private void GeometryCanvas_OnMouseLeftButtonUp(object sender, MouseButtonEventArgs e)
         {
-            if (_selectFlag) //Если ButtonDown левой кнопки мыши произошло на фигуре, то все впорядке
+            //Если ButtonDown левой кнопки мыши произошло на фигуре, то все впорядке
+            //иначе выбранные фигуры сбрасываются
+            if (_selectFlag)
             {
                 _selectFlag = false;
             }
-            else //Если ButtonDown на канвасе, то выбранные фигуры сбрасываются
+            else
             {
                 if (!Keyboard.IsKeyDown(Key.LeftCtrl) && !Keyboard.IsKeyDown(Key.RightCtrl))
+                {
                     DropSelectedFigures();
+                }
             }
 
             var canvas = (sender as Canvas);
@@ -154,15 +162,15 @@ namespace AnterealTest
 
             _selectedShapeList.Add(_preSelectedItem);
 
-            _preSelectedItem.Stroke = new SolidColorBrush(_controlColorsDictionary["SelectedStroke"]);
-            _preSelectedItem.Fill = new SolidColorBrush(_controlColorsDictionary["SelectedFill"]);
+            _preSelectedItem.Stroke = new SolidColorBrush(Colors.Gold);
+            _preSelectedItem.Fill = new SolidColorBrush(Colors.Yellow);
         }
 
         private void Window_OnKeyDown(object sender, KeyEventArgs e)
         {
             if (e.Key == Key.Delete)
             {
-                ((MainWindowViewModel)DataContext).DeleteGeometries(_selectedShapeList
+                _mainWindowViewModel.DeleteGeometries(_selectedShapeList
                     .Select(shape => shape.DataContext as GeometryBaseModel).ToList());
 
                 _selectedShapeList.Clear();
@@ -170,7 +178,7 @@ namespace AnterealTest
 
             if ((Keyboard.IsKeyDown(Key.LeftCtrl) || Keyboard.IsKeyDown(Key.RightCtrl)) && e.Key == Key.S)
             {
-                ((MainWindowViewModel)DataContext).SaveChanges();
+                _mainWindowViewModel.SaveChanges();
             }
         }
 
@@ -181,28 +189,13 @@ namespace AnterealTest
         {
             foreach (var shape in _selectedShapeList)
             {
-                switch (shape)
-                {
-                    case Line lineShape:
-                        lineShape.Stroke = new SolidColorBrush(_controlColorsDictionary["LineStroke"]);
-                        lineShape.Fill = new SolidColorBrush(_controlColorsDictionary["LineStroke"]);
-                        break;
+                var shapeStyle = shapeColorDictionary[shape.GetType()];
 
-                    case Polygon polygonShape:
-                        polygonShape.Stroke = new SolidColorBrush(_controlColorsDictionary["PolygonStroke"]);
-                        polygonShape.Fill = new SolidColorBrush(_controlColorsDictionary["PolygonFill"]);
-                        break;
-
-                    case Path ellipseShape:
-                        ellipseShape.Stroke = new SolidColorBrush(_controlColorsDictionary["EllipseStroke"]);
-                        ellipseShape.Fill = new SolidColorBrush(_controlColorsDictionary["EllipseFill"]);
-                        break;
-                }
+                shape.Fill = new SolidColorBrush(shapeStyle.Fill);
+                shape.Stroke = new SolidColorBrush(shapeStyle.Stroke);
             }
             
             _selectedShapeList.Clear();
         }
     }
-
-
 }

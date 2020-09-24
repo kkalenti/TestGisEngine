@@ -30,7 +30,7 @@ namespace AnterealTest.ViewModels
         public string FilePath
         {
             get { return _filePath; }
-            set { _filePath = value; RaisePropertyChanged("FilePath"); }
+            set { _filePath = value; RaisePropertyChanged(nameof(FilePath)); }
         }
 
         private string _messageField;
@@ -40,7 +40,7 @@ namespace AnterealTest.ViewModels
         public string MessageField
         {
             get { return _messageField; }
-            set { _messageField = value; RaisePropertyChanged("MessageField"); }
+            set { _messageField = value; RaisePropertyChanged(nameof(MessageField)); }
         }
 
         private ObservableCollection<GeometryBaseModel> _geometries;
@@ -50,7 +50,7 @@ namespace AnterealTest.ViewModels
         public ObservableCollection<GeometryBaseModel> Geometries
         {
             get { return _geometries; }
-            set { _geometries = value; RaisePropertyChanged("Geometries"); }
+            set { _geometries = value; RaisePropertyChanged(nameof(Geometries)); }
         }
 
         private double _scaleValue = 1;
@@ -60,7 +60,7 @@ namespace AnterealTest.ViewModels
         public double ScaleValue
         {
             get { return _scaleValue;}
-            set { _scaleValue = value; RaisePropertyChanged("ScaleValue"); }
+            set { _scaleValue = value; RaisePropertyChanged(nameof(ScaleValue)); }
         }
 
         private Point _transformValue = new Point(0,0);
@@ -70,7 +70,7 @@ namespace AnterealTest.ViewModels
         public Point TransformValue
         {
             get { return _transformValue; }
-            set { _transformValue = value; RaisePropertyChanged("TransformValue"); }
+            set { _transformValue = value; RaisePropertyChanged(nameof(TransformValue)); }
         }
 
         private Point _centerValue = new Point(0, 0);
@@ -80,7 +80,7 @@ namespace AnterealTest.ViewModels
         public Point CenterValue
         {
             get { return _centerValue; }
-            set { _centerValue = value; RaisePropertyChanged("CenterValue"); }
+            set { _centerValue = value; RaisePropertyChanged(nameof(CenterValue)); }
         }
 
         /// <summary>
